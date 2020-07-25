@@ -14,10 +14,60 @@
             android:id="@+id/main_BTN_addButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="550dp"
+            android:text="Start Adding Courses"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/main_BTN_subjectButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_above="@id/main_LBL_memutzaLabel"
             android:layout_centerHorizontal="true"
-            android:text="Add Course"
+            android:text="Add Subject Name"
+            android:textStyle="bold"
+            android:visibility="invisible" />
+
+        <Button
+            android:id="@+id/main_BTN_gradeButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@id/main_LBL_memutzaLabel"
+            android:layout_centerHorizontal="true"
+            android:text="Add Grade"
+            android:textStyle="bold"
+            android:visibility="invisible" />
+
+        <Button
+            android:id="@+id/main_BTN_pointsButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@id/main_LBL_memutzaLabel"
+            android:layout_centerHorizontal="true"
+            android:text="Add Points"
+            android:textStyle="bold"
+            android:visibility="invisible" />
+
+        <TextView
+            android:id="@+id/main_LBL_welcomeLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:text="Welcome!"
+            android:textSize="50sp"
             android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/main_LBL_versionLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginRight="5dp"
+            android:layout_marginBottom="5dp"
+            android:text="v0.0.9" />
 
         <TextView
             android:id="@+id/main_LBL_feedbackLabel"
@@ -27,7 +77,8 @@
             android:layout_centerHorizontal="true"
             android:layout_marginBottom="10dp"
             android:text="Good Job!"
-            android:textSize="20sp" />
+            android:textSize="20sp"
+            android:textStyle="bold" />
 
         <TextView
             android:id="@+id/main_LBL_memutzaLabel"
@@ -55,18 +106,28 @@
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="15sp"
-            android:text="Calculate Academic Average"
+            android:text="Academic Average Calculator"
             android:textColor="@color/topHeadlineColor"
             android:textSize="25sp"
             android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/main_EDT_input"
+            android:layout_width="300dp"
+            android:layout_height="40dp"
+            android:layout_above="@+id/main_BTN_subjectButton"
+            android:layout_centerHorizontal="true"
+            android:visibility="invisible" />
 
         <ListView
             android:id="@+id/main_LST_gradesList"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_above="@+id/main_EDT_input"
             android:layout_below="@+id/main_LBL_topHeadline"
+            android:layout_marginLeft="15dp"
             android:layout_marginTop="10dp"
-            />
+            android:layout_marginRight="15dp" />
 
 
     </RelativeLayout>

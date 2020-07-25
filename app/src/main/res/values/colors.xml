@@ -8,4 +8,19 @@
     <color name="goodJobColor">#72DA76</color>
     <color name="topHeadlineColor">#2196F3</color>
 
+
+    /**Update the Average and display message accordingly
+    * 0-60 Unacceptable! (Red)
+    * 60-70 Bad! (Less red)
+    * 70-80 Reasonable! (Orange)
+    * 80-90 Good! (Blue)
+    * 90-100 Great! (Green)
+    */
+
+    <color name="unacceptableColor">#FF1100</color>
+    <color name="badColor">#F44336</color>
+    <color name="reasonableColor">#FF5722</color>
+    <color name="goodColor">#03A9F4</color>
+    <color name="greatColor">#4CAF50</color>
+
 </resources>
