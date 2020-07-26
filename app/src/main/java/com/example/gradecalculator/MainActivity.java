@@ -1,14 +1,10 @@
 package com.example.gradecalculator;
 
-import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.ContextMenu;
-import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -27,10 +23,7 @@ import java.util.ArrayList;
 
 public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickListener {
     //Buttons
-    private Button subjectButton;
-    private Button gradeButton;
-    private Button pointsButton;
-    private Button editButton;
+    private Button mainButton;
 
     //Texts
     private TextView feedBackLabel;
@@ -77,10 +70,8 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
         setContentView(R.layout.activity_main);
 
         /**Buttons*/
-        subjectButton = (Button) findViewById(R.id.main_BTN_subjectButton);
-        gradeButton = (Button) findViewById(R.id.main_BTN_gradeButton);
-        pointsButton = (Button) findViewById(R.id.main_BTN_pointsButton);
-        editButton = (Button) findViewById(R.id.main_BTN_editButton);
+        mainButton = (Button) findViewById(R.id.main_BTN_subjectButton);
+        mainButton.setText("Submit Subject");
 
         /**Labels*/
         feedBackLabel = (TextView) findViewById(R.id.main_LBL_feedbackLabel);
@@ -103,28 +94,35 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
         gradesList.setAdapter(adapter);
         registerForContextMenu(gradesList); // Attach context menu to list
 
-        subjectButton.setOnClickListener(new View.OnClickListener() {
+        mainButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                readSubjectName();
-            }
-        });
-
-        gradeButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                readGrade();
-            }
-        });
-
-        pointsButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                readPoints();
+                switch (mainButton.getText().toString()) {
+                    case "Submit Subject":
+                        readSubjectName();
+                        break;
+                    case "Submit Grade":
+                        readGrade();
+                        break;
+                    case "Submit Points":
+                        readPoints();
+                        break;
+                }
             }
         });
     }
 
+    /**
+     * Check if a number is double
+     */
+    public boolean isDouble(String value) {
+        try {
+            Double.parseDouble(value);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
 
     /**
      * Context menu methods:
@@ -226,8 +224,7 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
      * A method to edit selected entry by criteria
      */
     private void editEntry(int position, editType type) {
-        subjectButton.setVisibility(View.INVISIBLE); // Hide add button
-        editButton.setVisibility(View.VISIBLE); // Show edit button
+        mainButton.setText("Submit Edit");
 
         switch (type) {
             case nameEdit: // Edit name
@@ -242,8 +239,7 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
         }
         inputLabel.setText(null);
         inputLabel.setHint("Add subject name"); // Reset hint
-        editButton.setVisibility(View.INVISIBLE); // Hide edit button
-        subjectButton.setVisibility(View.VISIBLE); // Show add Subject button
+
     }
 
     /**
@@ -253,6 +249,7 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 
     /**
      * Get sort parameter and sort accordingly
+     * TODO: Add sort
      */
 
     private void sortBy(sortType type) {
@@ -268,6 +265,7 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 
     /**
      * Get save parameter and save accordingly
+     * TODO:Add save
      */
     private void save(saveType type) {
         switch (type) {
@@ -280,6 +278,7 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 
     /**
      * Show about_activity
+     * TODO: Add about activitiy (icon credit)
      */
 
     private void showAbout() {
@@ -287,6 +286,7 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 
     /**
      * Show statistics
+     * TODO: Add statistics
      */
     private void showStatistics() {
     }
@@ -313,8 +313,7 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
             grades.get(grades.size() - 1).setSubject(tempSubject); //Add subject
             inputLabel.setText(null);
             inputLabel.setHint("Enter Grade");
-            subjectButton.setVisibility(View.INVISIBLE);
-            gradeButton.setVisibility(View.VISIBLE);
+            mainButton.setText("Submit Grade");
         }
     }
 
@@ -331,8 +330,7 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
             grades.get(grades.size() - 1).setGrade(Integer.parseInt(tempGrade)); //Add grade
             inputLabel.setText(null);
             inputLabel.setHint("Enter Number of Points");
-            gradeButton.setVisibility(View.INVISIBLE);
-            pointsButton.setVisibility(View.VISIBLE);
+            mainButton.setText("Submit Points");
         }
     }
 
@@ -341,15 +339,14 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
      */
     public void readPoints() {
         String tempPoints = inputLabel.getText().toString();
-        if (!tempPoints.matches("\\d+") || Double.parseDouble(tempPoints) > 5 || Double.parseDouble(tempPoints) < 0) {
+        if (!(isDouble(tempPoints)) || Double.parseDouble(tempPoints) > 5 || Double.parseDouble(tempPoints) <= 0) {
             inputLabel.setError("Please enter a valid number of points!");
             inputLabel.requestFocus();
         } else {
             grades.get(grades.size() - 1).setPoints(Double.parseDouble(inputLabel.getText().toString())); //Add points
             inputLabel.setText(null);
             inputLabel.setHint("Add Subject Name");
-            pointsButton.setVisibility(View.INVISIBLE);
-            subjectButton.setVisibility(View.VISIBLE);
+            mainButton.setText("Submit Subject");
             addGradeToList();
         }
     }
