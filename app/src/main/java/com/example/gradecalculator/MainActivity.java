@@ -6,6 +6,7 @@ import androidx.core.content.ContextCompat;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -138,7 +139,36 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
     }
 
     /**
-     * A method to perform ContextMenu selection
+     * A function to edit or remove list entry
+     * 1. Edit name
+     * 2. Edit grade
+     * 3. Edit points
+     * 4. Remove entry
+     */
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+        int tempPosition = info.position;
+        switch (item.getItemId()) {
+            case R.id.context_edit_editName:
+                editEntry(tempPosition, editType.nameEdit);
+                return true;
+            case R.id.context_edit_editGrade:
+                editEntry(tempPosition, editType.gradeEdit);
+                return true;
+            case R.id.context_edit_editPoints:
+                editEntry(tempPosition, editType.pointsEdit);
+                return true;
+            case R.id.context_edit_remove:
+                removeListLine(tempPosition);
+                return true;
+            default:
+                return super.onContextItemSelected(item);
+        }
+    }
+
+    /**
+     * Show popup menu
      */
 
     public void showPopup(View v) {
@@ -191,63 +221,35 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
         }
     }
 
-    /**
-     * A function to edit or remove list entry
-     * 1. Edit name
-     * 2. Edit grade
-     * 3. Edit points
-     * 4. Remove entry
-     */
-    @Override
-    public boolean onContextItemSelected(MenuItem item) {
-
-        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-
-        if (item.getItemId() == R.id.context_edit_editName)
-            editEntry(info.position, editType.nameEdit);
-
-        if (item.getItemId() == R.id.context_edit_editGrade)
-            editEntry(info.position, editType.gradeEdit);
-
-        if (item.getItemId() == R.id.context_edit_editPoints)
-            editEntry(info.position, editType.pointsEdit);
-
-        if (item.getItemId() == R.id.removeButton)
-            removeListLine(info.position);
-
-        return super.onContextItemSelected(item);
-    }
 
     /**
      * A method to edit selected entry by criteria
      */
-    private void editEntry(int position, editType nameEdit) {
-        subjectButton.setVisibility(View.INVISIBLE);
-        switch (nameEdit) {
+    private void editEntry(int position, editType type) {
+        subjectButton.setVisibility(View.INVISIBLE); // Hide add button
+        editButton.setVisibility(View.VISIBLE); // Show edit button
+
+        switch (type) {
             case nameEdit: // Edit name
-                editButton.setVisibility(View.VISIBLE);
-                editButton.setText("Edit Course Name");
-                String tempSubjectName = inputLabel.getText().toString();
-                inputLabel.setHint("Enter new subject name");
-                if (!tempSubjectName.matches("\\d+") || Integer.parseInt(tempSubjectName) > 100 || Integer.parseInt(tempSubjectName) < 0) {
-                    inputLabel.setError("Please enter a valid grade!");
-                    inputLabel.requestFocus();
-                } else {
-                    grades.get(position).setSubject(tempSubjectName);
-                    stringGrades.set(position, "Subject: " + tempSubjectName + "   Grade: " + grades.get(position).getGrade() + "   Points: " + grades.get(position).getPoints());
-                    Toast.makeText(getApplicationContext(), tempSubjectName + " Name Edited Successfully!", Toast.LENGTH_SHORT).show();
-                }
+                Toast.makeText(getApplicationContext(), "Edit name", Toast.LENGTH_SHORT).show();
                 break;
-            case gradeEdit:
+            case gradeEdit: // Edit grade
+                Toast.makeText(getApplicationContext(), "Edit grade", Toast.LENGTH_SHORT).show();
                 break;
-            case pointsEdit:
+            case pointsEdit: // Edit points
+                Toast.makeText(getApplicationContext(), "Edit points", Toast.LENGTH_SHORT).show();
                 break;
         }
         inputLabel.setText(null);
-        inputLabel.setHint("Add subject name");
-        editButton.setVisibility(View.INVISIBLE);
-        subjectButton.setVisibility(View.VISIBLE);
+        inputLabel.setHint("Add subject name"); // Reset hint
+        editButton.setVisibility(View.INVISIBLE); // Hide edit button
+        subjectButton.setVisibility(View.VISIBLE); // Show add Subject button
     }
+
+    /**
+     * Edit the name of the entry
+     */
+
 
     /**
      * Get sort parameter and sort accordingly
@@ -276,9 +278,16 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
         }
     }
 
+    /**
+     * Show about_activity
+     */
+
     private void showAbout() {
     }
 
+    /**
+     * Show statistics
+     */
     private void showStatistics() {
     }
 
