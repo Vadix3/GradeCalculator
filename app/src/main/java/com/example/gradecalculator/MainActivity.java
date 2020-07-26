@@ -24,18 +24,12 @@ import android.widget.Toast;
 import java.util.ArrayList;
 
 
-/**
- * TODO: Add options button
- * 1. Sort by name, grade, points (Asc/Desc)
- * 2. Statistics (Highest, Lowest)
- * 3. Save data (Firebase?)
- */
-
-public class MainActivity extends Activity implements MenuItem.OnMenuItemClickListener {
+public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickListener {
     //Buttons
     private Button subjectButton;
     private Button gradeButton;
     private Button pointsButton;
+    private Button editButton;
 
     //Texts
     private TextView feedBackLabel;
@@ -70,8 +64,8 @@ public class MainActivity extends Activity implements MenuItem.OnMenuItemClickLi
     }
 
     //TODO: Check what is the right type of implementation
-    public enum inputType {
-        firstInput, nameEdit, gradeEdit, pointsEdit
+    public enum editType {
+        nameEdit, gradeEdit, pointsEdit
     }
 
     @Override
@@ -85,6 +79,7 @@ public class MainActivity extends Activity implements MenuItem.OnMenuItemClickLi
         subjectButton = (Button) findViewById(R.id.main_BTN_subjectButton);
         gradeButton = (Button) findViewById(R.id.main_BTN_gradeButton);
         pointsButton = (Button) findViewById(R.id.main_BTN_pointsButton);
+        editButton = (Button) findViewById(R.id.main_BTN_editButton);
 
         /**Labels*/
         feedBackLabel = (TextView) findViewById(R.id.main_LBL_feedbackLabel);
@@ -107,9 +102,6 @@ public class MainActivity extends Activity implements MenuItem.OnMenuItemClickLi
         gradesList.setAdapter(adapter);
         registerForContextMenu(gradesList); // Attach context menu to list
 
-        /**TODO: Complete edit methods
-         * maybe add parameter to methods to prevent duplicate
-         * */
         subjectButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -157,45 +149,68 @@ public class MainActivity extends Activity implements MenuItem.OnMenuItemClickLi
     }
 
     /**
-     * TODO:Fix it
+     * TODO: Add Button Click Effect
+     * Menu button options:
+     * 1. Sort
+     * 1.1 Sort by name - Sort grades array by name
+     * 1.2 Sort by grade - Sort grades array by grade
+     * 1.3 Sort by points - Sort grades array by points
+     * 2. Save
+     * 2.1 Save locally - Save on device
+     * 2.2 Save FireBase - Save on Server
+     * 3. Statistics - Display statistics (Top grade, Total number of points etc..)
+     * 4. About - Credits and such
      */
     @Override
     public boolean onMenuItemClick(MenuItem item) {
+
         switch (item.getItemId()) {
             case R.id.optionsMenu_saveListDevice:
                 save(saveType.Device);
+                return true;
             case R.id.optionsMenu_saveListServer:
                 save(saveType.Server);
+                return true;
             case R.id.optionsMenu_about:
                 showAbout();
+                return true;
             case R.id.optionsMenu_sortByGrade:
                 sortBy(sortType.byGrade);
+                return true;
             case R.id.optionsMenu_sortByName:
                 sortBy(sortType.byName);
+                return true;
             case R.id.optionsMenu_sortByPoints:
                 sortBy(sortType.byPoints);
+                return true;
             case R.id.optionsMenu_statistics:
                 showStatistics();
+                return true;
             default:
                 return false;
         }
     }
 
+    /**
+     * A function to edit or remove list entry
+     * 1. Edit name
+     * 2. Edit grade
+     * 3. Edit points
+     * 4. Remove entry
+     */
     @Override
     public boolean onContextItemSelected(MenuItem item) {
 
         AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-        if (item.getItemId() == R.id.editButton) // Edit list row
-            editListLine(info.position);
 
         if (item.getItemId() == R.id.context_edit_editName)
-            System.err.println("Edit by name");
+            editEntry(info.position, editType.nameEdit);
 
         if (item.getItemId() == R.id.context_edit_editGrade)
-            System.err.println("Edit by grade");
+            editEntry(info.position, editType.gradeEdit);
 
         if (item.getItemId() == R.id.context_edit_editPoints)
-            System.err.println("Edit by points");
+            editEntry(info.position, editType.pointsEdit);
 
         if (item.getItemId() == R.id.removeButton)
             removeListLine(info.position);
@@ -203,13 +218,36 @@ public class MainActivity extends Activity implements MenuItem.OnMenuItemClickLi
         return super.onContextItemSelected(item);
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.options_menu, menu);
-        return true;
+    /**
+     * A method to edit selected entry by criteria
+     */
+    private void editEntry(int position, editType nameEdit) {
+        subjectButton.setVisibility(View.INVISIBLE);
+        switch (nameEdit) {
+            case nameEdit: // Edit name
+                editButton.setVisibility(View.VISIBLE);
+                editButton.setText("Edit Course Name");
+                String tempSubjectName = inputLabel.getText().toString();
+                inputLabel.setHint("Enter new subject name");
+                if (!tempSubjectName.matches("\\d+") || Integer.parseInt(tempSubjectName) > 100 || Integer.parseInt(tempSubjectName) < 0) {
+                    inputLabel.setError("Please enter a valid grade!");
+                    inputLabel.requestFocus();
+                } else {
+                    grades.get(position).setSubject(tempSubjectName);
+                    stringGrades.set(position, "Subject: " + tempSubjectName + "   Grade: " + grades.get(position).getGrade() + "   Points: " + grades.get(position).getPoints());
+                    Toast.makeText(getApplicationContext(), tempSubjectName + " Name Edited Successfully!", Toast.LENGTH_SHORT).show();
+                }
+                break;
+            case gradeEdit:
+                break;
+            case pointsEdit:
+                break;
+        }
+        inputLabel.setText(null);
+        inputLabel.setHint("Add subject name");
+        editButton.setVisibility(View.INVISIBLE);
+        subjectButton.setVisibility(View.VISIBLE);
     }
-
 
     /**
      * Get sort parameter and sort accordingly
@@ -356,11 +394,6 @@ public class MainActivity extends Activity implements MenuItem.OnMenuItemClickLi
         }
         gradeLabel.setText(String.format("%.1f", totalAvg)); // Update label
         setColor(); // Set feedback according to grade
-    }
-
-
-    public void editListLine(int position) {
-        System.out.println("Hi! I would like to edit the following row: " + stringGrades.get(position));
     }
 
     /**

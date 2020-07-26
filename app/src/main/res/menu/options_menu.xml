@@ -1,12 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
-
-
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/optionsMenu_sort"
-        android:title="Sort"
-        app:showAsAction="never">
+        android:title="Sort">
         <menu>
             <item
                 android:id="@+id/optionsMenu_sortByName"
@@ -21,8 +17,7 @@
     </item>
     <item
         android:id="@+id/optionsMenu_save"
-        android:title="Save"
-        app:showAsAction="never">
+        android:title="Save">
         <menu>
             <item
                 android:id="@+id/optionsMenu_saveListDevice"
@@ -35,11 +30,9 @@
 
     <item
         android:id="@+id/optionsMenu_statistics"
-        android:title="Statistics"
-        app:showAsAction="never" />
+        android:title="Statistics" />
     <item
         android:id="@+id/optionsMenu_about"
-        android:title="About"
-        app:showAsAction="never" />
+        android:title="About" />
 
 </menu>
