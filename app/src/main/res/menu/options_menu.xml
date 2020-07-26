@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+
+    <item
+        android:id="@+id/optionsMenu_sort"
+        android:title="Sort"
+        app:showAsAction="never">
+        <menu>
+            <item
+                android:id="@+id/optionsMenu_sortByName"
+                android:title="By name" />
+            <item
+                android:id="@+id/optionsMenu_sortByGrade"
+                android:title="By grade" />
+            <item
+                android:id="@+id/optionsMenu_sortByPoints"
+                android:title="By points" />
+        </menu>
+    </item>
+    <item
+        android:id="@+id/optionsMenu_save"
+        android:title="Save"
+        app:showAsAction="never">
+        <menu>
+            <item
+                android:id="@+id/optionsMenu_saveListDevice"
+                android:title="On device" />
+            <item
+                android:id="@+id/optionsMenu_saveListServer"
+                android:title="On server" />
+        </menu>
+    </item>
+
+    <item
+        android:id="@+id/optionsMenu_statistics"
+        android:title="Statistics"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/optionsMenu_about"
+        android:title="About"
+        app:showAsAction="never" />
+
+</menu>

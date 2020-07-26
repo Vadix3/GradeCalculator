@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "224167956913",
+    "firebase_url": "https://academicgracecalc.firebaseio.com",
+    "project_id": "academicgracecalc",
+    "storage_bucket": "academicgracecalc.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:224167956913:android:b8da2202717c7b647a2d90",
+        "android_client_info": {
+          "package_name": "com.example.gradecalculator"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "224167956913-at2uuiju2954ouo57ctf56b3k8uh303m.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDF7KWTtr3JvrZkkSdqh4wScXZISMUKVMY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "224167956913-at2uuiju2954ouo57ctf56b3k8uh303m.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
