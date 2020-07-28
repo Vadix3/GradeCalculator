@@ -30,26 +30,6 @@
             android:textStyle="bold" />
 
         <Button
-            android:id="@+id/main_BTN_gradeButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_above="@id/main_LBL_memutzaLabel"
-            android:layout_centerHorizontal="true"
-            android:text="Add Grade"
-            android:textStyle="bold"
-            android:visibility="invisible" />
-
-        <Button
-            android:id="@+id/main_BTN_pointsButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_above="@id/main_LBL_memutzaLabel"
-            android:layout_centerHorizontal="true"
-            android:text="Add Points"
-            android:textStyle="bold"
-            android:visibility="invisible" />
-
-        <Button
             android:id="@+id/main_BTN_editButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

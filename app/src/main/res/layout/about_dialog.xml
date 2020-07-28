@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="15dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:padding="10dp">
+
+        <TextView
+            android:id="@+id/academicAvgTitle"
+            android:layout_width="match_parent"
+            android:layout_marginTop="12dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="Academic Average Calculator"
+            android:textColor="@color/topHeadlineColor"
+            android:textSize="25sp" />
+
+        <TextView
+            android:id="@+id/nameTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/academicAvgTitle"
+            android:layout_centerVertical="true"
+            android:gravity="center"
+            android:text="by Vadim Kandaurov"
+            android:textSize="20sp" />
+
+        <TextView
+            android:id="@+id/creditTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/nameTitle"
+            android:layout_centerVertical="true"
+            android:gravity="center"
+            android:text="credit for icon"
+            android:textSize="15sp" />
+
+        <TextView
+            android:id="@+id/versionTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/creditTitle"
+            android:layout_centerVertical="true"
+            android:gravity="center"
+            android:text="v0.1.0"
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="10sp" />
+
+        <TextView
+            android:id="@+id/about_TXT_okText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
+            android:text="OK"
+            android:textSize="15sp"
+            android:textColor="@color/topHeadlineColor" />
+    </RelativeLayout>
+</RelativeLayout>

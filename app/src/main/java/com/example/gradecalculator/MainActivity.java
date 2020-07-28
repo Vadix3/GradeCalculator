@@ -1,8 +1,13 @@
 package com.example.gradecalculator;
 
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.MenuInflater;
@@ -18,12 +23,22 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 
 
-public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickListener {
+public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuItemClickListener {
+
+    /**
+     * Widgets
+     */
+
     //Buttons
-    private Button mainButton;
+    private Button inputButton;
+    private Button editButton;
 
     //Texts
     private TextView feedBackLabel;
@@ -32,9 +47,14 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
     private TextView emptyListLabel;
     private EditText inputLabel;
 
-
     //List
     private ListView gradesList;
+
+    /**
+     * Variables
+     */
+    //Boolean
+    public static boolean loadStart = false; // Boolean to load from start
 
     //Arrays
     private ArrayList<Grade> grades; //from user input
@@ -47,7 +67,6 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
     double numOfPoints = 0; // Total points
     double totalAvg = 0;
 
-
     //enums
     public enum saveType { //
         Device, Server
@@ -57,7 +76,6 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
         byName, byGrade, byPoints
     }
 
-    //TODO: Check what is the right type of implementation
     public enum editType {
         nameEdit, gradeEdit, pointsEdit
     }
@@ -70,8 +88,10 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
         setContentView(R.layout.activity_main);
 
         /**Buttons*/
-        mainButton = (Button) findViewById(R.id.main_BTN_subjectButton);
-        mainButton.setText("Submit Subject");
+        inputButton = (Button) findViewById(R.id.main_BTN_subjectButton);
+        inputButton.setText("Submit Subject");
+        editButton = (Button) findViewById(R.id.main_BTN_editButton);
+        editButton.setVisibility(View.INVISIBLE);
 
         /**Labels*/
         feedBackLabel = (TextView) findViewById(R.id.main_LBL_feedbackLabel);
@@ -90,14 +110,18 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
         /**Arrays*/
         grades = new ArrayList<Grade>();
         stringGrades = new ArrayList<String>();
+        if (loadStart) {
+            loadFromDevice(); //  -> In case I would like to load from the start and not with a button press
+        }
         adapter = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_list_item_1, stringGrades);
         gradesList.setAdapter(adapter);
         registerForContextMenu(gradesList); // Attach context menu to list
 
-        mainButton.setOnClickListener(new View.OnClickListener() {
+
+        inputButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                switch (mainButton.getText().toString()) {
+                switch (inputButton.getText().toString()) {
                     case "Submit Subject":
                         readSubjectName();
                         break;
@@ -199,6 +223,12 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
             case R.id.optionsMenu_saveListServer:
                 save(saveType.Server);
                 return true;
+            case R.id.optionsMenu_loadListDevice:
+                load(saveType.Device);
+                return true;
+            case R.id.optionsMenu_loadListServer:
+                load(saveType.Server);
+                return true;
             case R.id.optionsMenu_about:
                 showAbout();
                 return true;
@@ -224,17 +254,17 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
      * A method to edit selected entry by criteria
      */
     private void editEntry(int position, editType type) {
-        mainButton.setText("Submit Edit");
+        inputButton.setText("Submit Edit");
 
         switch (type) {
             case nameEdit: // Edit name
-                Toast.makeText(getApplicationContext(), "Edit name", Toast.LENGTH_SHORT).show();
+                editEntryName(position);
                 break;
             case gradeEdit: // Edit grade
-                Toast.makeText(getApplicationContext(), "Edit grade", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Edit grade *In Construction*", Toast.LENGTH_SHORT).show();
                 break;
             case pointsEdit: // Edit points
-                Toast.makeText(getApplicationContext(), "Edit points", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Edit points *In Construction*", Toast.LENGTH_SHORT).show();
                 break;
         }
         inputLabel.setText(null);
@@ -242,53 +272,135 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 
     }
 
+
     /**
      * Edit the name of the entry
      */
-
+    public void editEntryName(int position) {
+        String tempName = inputLabel.getText().toString();
+        if (!(tempName.matches(".*[a-z].*"))) {
+            inputLabel.setError("Please enter a valid name!");
+            inputLabel.requestFocus();
+        } else {
+            tempName = tempName.substring(0, 1).toUpperCase() + tempName.substring(1); // Capitalize
+            grades.get(position).setSubject(tempName); // Edit Name in objects array
+            stringGrades.set(position, "Subject: " + tempName + "   Grade: " + grades.get(position).getGrade() + "   Points: " + grades.get(position).getPoints()); // Edit name in strings array
+            adapter.notifyDataSetChanged(); // update list
+            Toast.makeText(getApplicationContext(), tempName + "edited successfully!", Toast.LENGTH_SHORT).show();
+            inputLabel.setHint("Enter Course Name");
+            inputLabel.setText(null);
+            inputButton.setText("Submit Subject");
+        }
+    }
 
     /**
      * Get sort parameter and sort accordingly
-     * TODO: Add sort
+     * TODO: Add sorts (write manually, learn sorts)
      */
 
     private void sortBy(sortType type) {
         switch (type) {
             case byGrade:
+                Toast.makeText(this, "Sort by grade *In Construction*", Toast.LENGTH_SHORT).show();
                 return;
             case byName:
+                Toast.makeText(this, "Sort by name *In Construction*", Toast.LENGTH_SHORT).show();
                 return;
             case byPoints:
+                Toast.makeText(this, "Sort by points *In Construction*", Toast.LENGTH_SHORT).show();
                 return;
         }
     }
 
+
     /**
      * Get save parameter and save accordingly
-     * TODO:Add save
+     * TODO:Add save in server
      */
     private void save(saveType type) {
         switch (type) {
             case Device:
-                return;
+                saveOnDevice();
+                break;
             case Server:
-                return;
+                Toast.makeText(this, "Save to server *In Construction*", Toast.LENGTH_SHORT).show();
+                break;
         }
     }
 
     /**
+     * Get save parameter and load accordingly
+     * TODO:Add load from server
+     */
+    private void load(saveType type) {
+        switch (type) {
+            case Device:
+                loadFromDevice();
+                break;
+            case Server:
+                Toast.makeText(this, "Load from server *In Construction*", Toast.LENGTH_SHORT).show();
+                break;
+        }
+        adapter = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_list_item_1, stringGrades);
+        gradesList.setAdapter(adapter);
+        registerForContextMenu(gradesList); // Attach context menu to list
+        adapter.notifyDataSetChanged(); // Notify list
+        updateStats();
+        Toast.makeText(this, "Data loaded successfully!", Toast.LENGTH_SHORT).show();
+    }
+
+    /**
+     * A method to save grades array on the device
+     * save grades array? string array?
+     */
+    private void saveOnDevice() {
+
+        SharedPreferences sharedPreferences = getSharedPreferences("shared preferences", MODE_PRIVATE);
+        sharedPreferences.edit().clear(); // Clear previous
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        Gson gson = new Gson();
+        String gradeJson = gson.toJson(grades);
+        String stringJson = gson.toJson(stringGrades); //Save stringGrades array
+        editor.putString("Grades Object List", gradeJson);
+        editor.putString("Grades String List", stringJson);
+        editor.apply();
+        Toast.makeText(this, "Data saved successfully!", Toast.LENGTH_SHORT).show();
+    }
+
+    //Maybe try to load anyway? worst case we wont get anything
+    private void loadFromDevice() {
+
+        SharedPreferences sharedPreferences = getSharedPreferences("shared preferences", MODE_PRIVATE);
+        Gson gson = new Gson();
+
+        String stringJson = sharedPreferences.getString("Grades String List", null); // get string json
+        String gradeJson = sharedPreferences.getString("Grades Object List", null); // get object json
+
+        Type stringType = new TypeToken<ArrayList<String>>() {
+        }.getType();
+        stringGrades = gson.fromJson(stringJson, stringType); //get string grades array from json
+
+        Type gradeType = new TypeToken<ArrayList<Grade>>() {
+        }.getType();
+        grades = gson.fromJson(gradeJson, gradeType); // get grades array from json
+        updateStats();
+    }
+
+    /**
      * Show about_activity
-     * TODO: Add about activitiy (icon credit)
      */
 
     private void showAbout() {
+        AboutDialog dialog = new AboutDialog();
+        dialog.show(getSupportFragmentManager(), "AboutDialog");
     }
 
     /**
      * Show statistics
-     * TODO: Add statistics
+     * TODO: Add statistics. Fragment window? Activity?
      */
     private void showStatistics() {
+        Toast.makeText(this, "Show statistics *In Construction*", Toast.LENGTH_SHORT).show();
     }
 
 
@@ -309,11 +421,12 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
             inputLabel.setError("Please enter a valid name!");
             inputLabel.requestFocus();
         } else {
+            tempSubject = tempSubject.substring(0, 1).toUpperCase() + tempSubject.substring(1); // Capitalize
             grades.add(new Grade()); // Create new grade
             grades.get(grades.size() - 1).setSubject(tempSubject); //Add subject
             inputLabel.setText(null);
             inputLabel.setHint("Enter Grade");
-            mainButton.setText("Submit Grade");
+            inputButton.setText("Submit Grade");
         }
     }
 
@@ -330,7 +443,7 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
             grades.get(grades.size() - 1).setGrade(Integer.parseInt(tempGrade)); //Add grade
             inputLabel.setText(null);
             inputLabel.setHint("Enter Number of Points");
-            mainButton.setText("Submit Points");
+            inputButton.setText("Submit Points");
         }
     }
 
@@ -346,7 +459,7 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
             grades.get(grades.size() - 1).setPoints(Double.parseDouble(inputLabel.getText().toString())); //Add points
             inputLabel.setText(null);
             inputLabel.setHint("Add Subject Name");
-            mainButton.setText("Submit Subject");
+            inputButton.setText("Submit Subject");
             addGradeToList();
         }
     }
@@ -356,7 +469,6 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
      */
     public void addGradeToList() {
         Grade temp = grades.get(numOfInputs);
-        numOfInputs++; // increase total number of inputs
         String tempSubjectName = temp.getSubject();
         int tempGrade = temp.getGrade();
         double tempPoints = temp.getPoints();
@@ -371,33 +483,24 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
 
 
     /**
-     * A method to update the total avg and label
+     * A method to update the total avg and labels (after load & changes to the arrays)
      */
 
     public void updateStats() {
+        gradesSum = 0;
+        numOfPoints = 0;
         //Set labels visibility
         if (gradeLabel.getVisibility() != View.VISIBLE)
             gradeLabel.setVisibility(View.VISIBLE);
         if (avgTitleLabel.getVisibility() != View.VISIBLE)
             avgTitleLabel.setVisibility(View.VISIBLE);
 
-        //temp grade
-        Grade temp = grades.get(numOfInputs - 1);
-        double tempPoints = temp.getPoints();
-        int tempGrade = temp.getGrade();
-
-        //Update total number of points
-        numOfPoints += temp.getPoints();
-        gradesSum += tempGrade;
-
-        // In case of first entry
-        if (totalAvg == 0)
-            totalAvg = tempGrade;
-
-            // Update total average
-        else {
-            totalAvg = totalAvg + (tempGrade - totalAvg) * tempPoints / numOfPoints;
+        numOfInputs = grades.size();
+        for (Grade grade : grades) {
+            numOfPoints += grade.getPoints();
+            gradesSum += (grade.getPoints() * grade.getGrade());
         }
+        totalAvg = gradesSum / numOfPoints;
         gradeLabel.setText(String.format("%.1f", totalAvg)); // Update label
         setColor(); // Set feedback according to grade
     }
@@ -412,12 +515,11 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
         grades.remove(position);
         stringGrades.remove(position);
         adapter.notifyDataSetChanged();
-        numOfInputs--;
 
         //Update label
         Toast.makeText(getApplicationContext(), temp.getSubject() + " Removed Successfully!", Toast.LENGTH_SHORT).show();
 
-        if (numOfInputs == 0) { // if last input
+        if (numOfInputs - 1 == 0) { // if last input
             avgTitleLabel.setVisibility(View.INVISIBLE);
             gradeLabel.setVisibility(View.INVISIBLE);
             feedBackLabel.setVisibility(View.INVISIBLE);
@@ -427,11 +529,7 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
             emptyListLabel.setVisibility(View.VISIBLE);
         } else {
             //Update average
-            totalAvg = ((totalAvg * numOfPoints) - (temp.getGrade() * temp.getPoints())) / (numOfPoints - temp.getPoints());
-            numOfPoints -= temp.getPoints();
-            gradesSum -= temp.getGrade();
-            gradeLabel.setText(String.format("%.1f", totalAvg));
-
+            updateStats();
         }
     }
 
@@ -465,5 +563,14 @@ public class MainActivity extends Activity implements PopupMenu.OnMenuItemClickL
             feedBackLabel.setText("Excellent! :D");
             feedBackLabel.setTextColor(ContextCompat.getColor(this, R.color.goodJobColor));
         }
+    }
+
+    /**
+     * Method to ask for exit when backPress
+     */
+    @Override
+    public void onBackPressed() {
+        QuitDialog dialog = new QuitDialog();
+        dialog.show(getSupportFragmentManager(), "QuitDialog");
     }
 }

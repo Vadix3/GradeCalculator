@@ -35,6 +35,14 @@
             android:layout_marginTop="550dp"
             android:text="Start Adding Courses"
             android:textStyle="bold" />
+        <Button
+            android:id="@+id/welcome_BTN_loadCourses"
+            android:layout_width="190dp"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@+id/welcome_BTN_startButton"
+            android:text="Load list"
+            android:textStyle="bold" />
 
 
     </RelativeLayout>

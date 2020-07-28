@@ -27,6 +27,18 @@
                 android:title="On server" />
         </menu>
     </item>
+    <item
+        android:id="@+id/optionsMenu_load"
+        android:title="Load">
+        <menu>
+            <item
+                android:id="@+id/optionsMenu_loadListDevice"
+                android:title="From device" />
+            <item
+                android:id="@+id/optionsMenu_loadListServer"
+                android:title="From server" />
+        </menu>
+    </item>
 
     <item
         android:id="@+id/optionsMenu_statistics"
