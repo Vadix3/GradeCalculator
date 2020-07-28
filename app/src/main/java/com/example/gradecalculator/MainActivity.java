@@ -7,6 +7,7 @@ import androidx.fragment.app.FragmentManager;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.ContextMenu;
@@ -26,11 +27,12 @@ import android.widget.Toast;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import java.io.Serializable;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 
 
-public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuItemClickListener {
+public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuItemClickListener, Serializable {
 
     /**
      * Widgets
@@ -62,21 +64,21 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
     private ArrayAdapter<String> adapter;
 
     //Numbers
-    int numOfInputs = 0; // Number of grades
-    int gradesSum = 0; // Sum of grades
-    double numOfPoints = 0; // Total points
-    double totalAvg = 0;
+    private int numOfInputs = 0; // Number of grades
+    private int gradesSum = 0; // Sum of grades
+    private double numOfPoints = 0; // Total points
+    private double totalAvg = 0;
 
     //enums
-    public enum saveType { //
+    private enum saveType { //
         Device, Server
     }
 
-    public enum sortType {
+    private enum sortType {
         byName, byGrade, byPoints
     }
 
-    public enum editType {
+    private enum editType {
         nameEdit, gradeEdit, pointsEdit
     }
 
@@ -400,7 +402,9 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
      * TODO: Add statistics. Fragment window? Activity?
      */
     private void showStatistics() {
-        Toast.makeText(this, "Show statistics *In Construction*", Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(MainActivity.this, StatisticsActivity.class);
+        intent.putExtra("GradesArray", grades);
+        startActivity(intent);
     }
 
 

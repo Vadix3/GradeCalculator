@@ -14,8 +14,8 @@ public class WelcomeActivity extends AppCompatActivity {
      * Widgets
      */
     //Buttons
-    Button welcomeButton;
-    Button loadButton;
+    private Button welcomeButton;
+    private Button loadButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

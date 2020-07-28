@@ -118,7 +118,7 @@
             android:layout_below="@+id/main_LBL_topHeadline"
             android:layout_marginLeft="15dp"
             android:layout_marginTop="10dp"
-            android:layout_marginRight="15dp"></ListView>
+            android:layout_marginRight="15dp"/>
 
 
     </RelativeLayout>

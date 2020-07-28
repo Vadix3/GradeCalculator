@@ -12,7 +12,7 @@ import androidx.fragment.app.DialogFragment;
 
 public class AboutDialog extends DialogFragment {
 
-    TextView okText;
+    private TextView okText;
 
     @Nullable
     @Override

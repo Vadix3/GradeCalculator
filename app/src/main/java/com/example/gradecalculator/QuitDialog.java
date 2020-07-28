@@ -16,8 +16,8 @@ import org.w3c.dom.Text;
 import java.util.zip.Inflater;
 
 public class QuitDialog extends DialogFragment {
-    TextView yesButton;
-    TextView noButton;
+    private TextView yesButton;
+    private TextView noButton;
 
     @Nullable
     @Override

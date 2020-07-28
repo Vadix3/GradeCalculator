@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="10dp">
+<TextView
+    android:id="@+id/statistics_LBL_headline"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_alignParentTop="true"
+    android:gravity="center"
+    android:text="Statistics"
+    android:textSize="30sp"
+    android:layout_marginTop="20dp"
+    android:textColor="@android:color/holo_blue_dark"
+    />
+
+    <ListView
+        android:id="@+id/statistics_LST_statList"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/statistics_LBL_headline"
+        android:layout_marginTop="20dp"
+        >
+
+
+    </ListView>
+
+
+
+</RelativeLayout>
