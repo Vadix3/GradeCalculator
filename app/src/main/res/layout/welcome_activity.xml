@@ -25,7 +25,7 @@
             android:layout_centerHorizontal="true"
             android:layout_marginRight="5dp"
             android:layout_marginBottom="5dp"
-            android:text="v0.0.9" />
+            android:text="v0.1.0.0" />
 
         <Button
             android:id="@+id/welcome_BTN_startButton"

@@ -36,7 +36,7 @@
             android:layout_below="@+id/nameTitle"
             android:layout_centerVertical="true"
             android:gravity="center"
-            android:text="credit for icon"
+            android:text="Icon: Flaticon.com"
             android:textSize="15sp" />
 
         <TextView
@@ -46,7 +46,7 @@
             android:layout_below="@+id/creditTitle"
             android:layout_centerVertical="true"
             android:gravity="center"
-            android:text="v0.1.0"
+            android:text="v0.1.1"
             android:textColor="@color/colorPrimaryDark"
             android:textSize="10sp" />
 

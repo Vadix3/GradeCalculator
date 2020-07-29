@@ -1,15 +1,13 @@
 package com.example.gradecalculator;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
 
-import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -23,16 +21,41 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
-
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.analytics.FirebaseAnalytics;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 
+
+// Use the application default credentials
 
 public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuItemClickListener, Serializable {
+
+    public static final String TAG = "Array";
+    /**
+     * FireBase first test stuff
+     */
+
+    private FirebaseAnalytics analytics;
+
+    public static final String QUOTE_KEY = "quote";
+    private DocumentReference mDocRef = FirebaseFirestore.getInstance().document("myData/Arrays");
+
+    /** End of FireBase stuff*/
+
 
     /**
      * Widgets
@@ -47,6 +70,7 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
     private TextView gradeLabel;
     private TextView avgTitleLabel;
     private TextView emptyListLabel;
+    private TextView versionLabel;
     private EditText inputLabel;
 
     //List
@@ -57,6 +81,8 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
      */
     //Boolean
     public static boolean loadStart = false; // Boolean to load from start
+    public static String versionNum = "v0.1.1.0";
+    boolean isListEmpty = true;
 
     //Arrays
     private ArrayList<Grade> grades; //from user input
@@ -68,6 +94,10 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
     private int gradesSum = 0; // Sum of grades
     private double numOfPoints = 0; // Total points
     private double totalAvg = 0;
+
+
+    public MainActivity() throws IOException {
+    }
 
     //enums
     private enum saveType { //
@@ -89,6 +119,12 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        /**FireBase stuff*/
+
+        analytics = FirebaseAnalytics.getInstance(this);
+        /**FireBase stuff*/
+
+
         /**Buttons*/
         inputButton = (Button) findViewById(R.id.main_BTN_subjectButton);
         inputButton.setText("Submit Subject");
@@ -104,6 +140,8 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
         avgTitleLabel.setVisibility(View.INVISIBLE);
         emptyListLabel = (TextView) findViewById(R.id.main_LBL_nothingToShow);
         emptyListLabel.setVisibility(View.INVISIBLE);
+        versionLabel = (TextView) findViewById(R.id.main_LBL_versionLabel);
+        versionLabel.setText(versionNum);
         inputLabel = (EditText) findViewById(R.id.main_EDT_input);
 
         /**Grade List*/
@@ -113,6 +151,7 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
         grades = new ArrayList<Grade>();
         stringGrades = new ArrayList<String>();
         if (loadStart) {
+            isListEmpty = false;
             loadFromDevice(); //  -> In case I would like to load from the start and not with a button press
         }
         adapter = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_list_item_1, stringGrades);
@@ -123,6 +162,7 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
         inputButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                isListEmpty = false;
                 switch (inputButton.getText().toString()) {
                     case "Submit Subject":
                         readSubjectName();
@@ -137,6 +177,38 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
             }
         });
     }
+
+
+    /**
+     * FireBase stuff
+     */
+    public void saveOnServer() {
+        String quote = stringGrades.get(0);
+        if (quote.isEmpty()) {
+            quote = "Are you trolling?";
+        }
+        Map<String, Object> dataToSave = new HashMap<String, Object>();
+        dataToSave.put("StringsArray", stringGrades); // Save Strings Array
+        dataToSave.put("ObjectsArray", grades); // Save Objects Array
+        mDocRef.set(dataToSave).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                Log.d(TAG, "Document has been saved!");
+                Toast.makeText(getApplicationContext(), "List has been saved successfully!", Toast.LENGTH_SHORT).show();
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.w(TAG, "Document was not saved!", e);
+                Toast.makeText(getApplicationContext(), "List was not saved!", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+
+    }
+
+    /** FireBase stuff*/
+
 
     /**
      * Check if a number is double
@@ -220,10 +292,16 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
 
         switch (item.getItemId()) {
             case R.id.optionsMenu_saveListDevice:
-                save(saveType.Device);
+                if (isListEmpty)
+                    Toast.makeText(this, "Nothing to save!", Toast.LENGTH_SHORT).show();
+                else
+                    save(saveType.Device);
                 return true;
             case R.id.optionsMenu_saveListServer:
-                save(saveType.Server);
+                if (isListEmpty)
+                    Toast.makeText(this, "Nothing to save!", Toast.LENGTH_SHORT).show();
+                else
+                    save(saveType.Server);
                 return true;
             case R.id.optionsMenu_loadListDevice:
                 load(saveType.Device);
@@ -235,16 +313,27 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
                 showAbout();
                 return true;
             case R.id.optionsMenu_sortByGrade:
-                sortBy(sortType.byGrade);
+                if (isListEmpty)
+                    Toast.makeText(this, "Nothing to sort!", Toast.LENGTH_SHORT).show();
+                else
+                    sortBy(sortType.byGrade);
                 return true;
             case R.id.optionsMenu_sortByName:
-                sortBy(sortType.byName);
+                if (isListEmpty)
+                    Toast.makeText(this, "Nothing to sort!", Toast.LENGTH_SHORT).show();
+                else
+                    sortBy(sortType.byName);
                 return true;
             case R.id.optionsMenu_sortByPoints:
-                sortBy(sortType.byPoints);
+                if (isListEmpty)
+                    Toast.makeText(this, "Nothing to sort!", Toast.LENGTH_SHORT).show();
+                else
+                    sortBy(sortType.byPoints);
                 return true;
             case R.id.optionsMenu_statistics:
-                showStatistics();
+                if (isListEmpty) {
+                    Toast.makeText(this, "Nothing to show!", Toast.LENGTH_SHORT).show();
+                } else showStatistics();
                 return true;
             default:
                 return false;
@@ -260,7 +349,7 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
 
         switch (type) {
             case nameEdit: // Edit name
-                editEntryName(position);
+                Toast.makeText(this, "Edit name *In Construction*", Toast.LENGTH_SHORT).show();
                 break;
             case gradeEdit: // Edit grade
                 Toast.makeText(this, "Edit grade *In Construction*", Toast.LENGTH_SHORT).show();
@@ -297,23 +386,36 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
 
     /**
      * Get sort parameter and sort accordingly
-     * TODO: Add sorts (write manually, learn sorts)
      */
 
     private void sortBy(sortType type) {
         switch (type) {
             case byGrade:
-                Toast.makeText(this, "Sort by grade *In Construction*", Toast.LENGTH_SHORT).show();
-                return;
-            case byName:
-                Toast.makeText(this, "Sort by name *In Construction*", Toast.LENGTH_SHORT).show();
-                return;
-            case byPoints:
-                Toast.makeText(this, "Sort by points *In Construction*", Toast.LENGTH_SHORT).show();
-                return;
-        }
-    }
+                Collections.sort(grades);
 
+                break;
+            case byName:
+                Collections.sort(grades, new Comparator<Grade>() {
+                    @Override
+                    public int compare(Grade grade, Grade t1) {
+                        return grade.getSubject().compareToIgnoreCase(t1.getSubject());
+                    }
+                });
+                break;
+            case byPoints:
+                Collections.sort(grades, new Comparator<Grade>() {
+                    @Override
+                    public int compare(Grade grade, Grade t1) {
+                        return Double.compare(t1.getPoints(), grade.getPoints());
+                    }
+                });
+                break;
+        }
+        stringGrades.clear();
+        for (Grade grade : grades)
+            stringGrades.add("Subject: " + grade.getSubject() + "   Grade: " + grade.getGrade() + "   Points: " + grade.getPoints());
+        adapter.notifyDataSetChanged();
+    }
 
     /**
      * Get save parameter and save accordingly
@@ -325,7 +427,7 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
                 saveOnDevice();
                 break;
             case Server:
-                Toast.makeText(this, "Save to server *In Construction*", Toast.LENGTH_SHORT).show();
+                saveOnServer();
                 break;
         }
     }
@@ -340,7 +442,7 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
                 loadFromDevice();
                 break;
             case Server:
-                Toast.makeText(this, "Load from server *In Construction*", Toast.LENGTH_SHORT).show();
+                loadFromServer();
                 break;
         }
         adapter = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_list_item_1, stringGrades);
@@ -349,6 +451,25 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
         adapter.notifyDataSetChanged(); // Notify list
         updateStats();
         Toast.makeText(this, "Data loaded successfully!", Toast.LENGTH_SHORT).show();
+    }
+
+    private void loadFromServer() {
+        mDocRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                isListEmpty = false;
+                if (documentSnapshot.exists()) {
+                    stringGrades = (ArrayList<String>) documentSnapshot.get("StringsArray");
+                    grades = (ArrayList<Grade>) documentSnapshot.get("ObjectsArray");
+                }
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(getApplicationContext(), "Nothing to load!", Toast.LENGTH_SHORT).show();
+            }
+        });
+        updateStats();
     }
 
     /**
@@ -378,14 +499,18 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
         String stringJson = sharedPreferences.getString("Grades String List", null); // get string json
         String gradeJson = sharedPreferences.getString("Grades Object List", null); // get object json
 
-        Type stringType = new TypeToken<ArrayList<String>>() {
-        }.getType();
-        stringGrades = gson.fromJson(stringJson, stringType); //get string grades array from json
+        if (stringJson == null || gradeJson == null) {
+            Toast.makeText(this, "Nothing to load!", Toast.LENGTH_SHORT).show();
+        } else {
+            isListEmpty = false;
+            Type stringType = new TypeToken<ArrayList<String>>() {
+            }.getType();
+            stringGrades = gson.fromJson(stringJson, stringType); //get string grades array from json
 
-        Type gradeType = new TypeToken<ArrayList<Grade>>() {
-        }.getType();
-        grades = gson.fromJson(gradeJson, gradeType); // get grades array from json
-        updateStats();
+            Type gradeType = new TypeToken<ArrayList<Grade>>() {
+            }.getType();
+            grades = gson.fromJson(gradeJson, gradeType); // get grades array from json
+        }
     }
 
     /**
@@ -398,12 +523,12 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
     }
 
     /**
-     * Show statistics
-     * TODO: Add statistics. Fragment window? Activity?
+     * Show statistics (new activity)
      */
     private void showStatistics() {
         Intent intent = new Intent(MainActivity.this, StatisticsActivity.class);
         intent.putExtra("GradesArray", grades);
+        intent.putExtra("totalAvg", totalAvg);
         startActivity(intent);
     }
 
