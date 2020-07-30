@@ -121,7 +121,6 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
 
         /**FireBase stuff*/
 
-        analytics = FirebaseAnalytics.getInstance(this);
         /**FireBase stuff*/
 
 
@@ -182,30 +181,7 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
     /**
      * FireBase stuff
      */
-    public void saveOnServer() {
-        String quote = stringGrades.get(0);
-        if (quote.isEmpty()) {
-            quote = "Are you trolling?";
-        }
-        Map<String, Object> dataToSave = new HashMap<String, Object>();
-        dataToSave.put("StringsArray", stringGrades); // Save Strings Array
-        dataToSave.put("ObjectsArray", grades); // Save Objects Array
-        mDocRef.set(dataToSave).addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void aVoid) {
-                Log.d(TAG, "Document has been saved!");
-                Toast.makeText(getApplicationContext(), "List has been saved successfully!", Toast.LENGTH_SHORT).show();
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Log.w(TAG, "Document was not saved!", e);
-                Toast.makeText(getApplicationContext(), "List was not saved!", Toast.LENGTH_SHORT).show();
-            }
-        });
 
-
-    }
 
     /** FireBase stuff*/
 
@@ -377,7 +353,7 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
             grades.get(position).setSubject(tempName); // Edit Name in objects array
             stringGrades.set(position, "Subject: " + tempName + "   Grade: " + grades.get(position).getGrade() + "   Points: " + grades.get(position).getPoints()); // Edit name in strings array
             adapter.notifyDataSetChanged(); // update list
-            Toast.makeText(getApplicationContext(), tempName + "edited successfully!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, tempName + "edited successfully!", Toast.LENGTH_SHORT).show();
             inputLabel.setHint("Enter Course Name");
             inputLabel.setText(null);
             inputButton.setText("Submit Subject");
@@ -445,12 +421,39 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
                 loadFromServer();
                 break;
         }
+        Toast.makeText(this, "Data loaded successfully!", Toast.LENGTH_SHORT).show();
+    }
+
+    private void updateAdapter() {
         adapter = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_list_item_1, stringGrades);
         gradesList.setAdapter(adapter);
         registerForContextMenu(gradesList); // Attach context menu to list
         adapter.notifyDataSetChanged(); // Notify list
-        updateStats();
-        Toast.makeText(this, "Data loaded successfully!", Toast.LENGTH_SHORT).show();
+    }
+
+
+    private void loadFromDevice() {
+
+        SharedPreferences sharedPreferences = getSharedPreferences("shared preferences", MODE_PRIVATE);
+        Gson gson = new Gson();
+
+        String stringJson = sharedPreferences.getString("Grades String List", null); // get string json
+        String gradeJson = sharedPreferences.getString("Grades Object List", null); // get object json
+
+        if (stringJson == null || gradeJson == null) {
+            Toast.makeText(this, "Nothing to load!", Toast.LENGTH_SHORT).show();
+        } else {
+            isListEmpty = false;
+            Type stringType = new TypeToken<ArrayList<String>>() {
+            }.getType();
+            stringGrades = gson.fromJson(stringJson, stringType); //get string grades array from json
+
+            Type gradeType = new TypeToken<ArrayList<Grade>>() {
+            }.getType();
+            grades = gson.fromJson(gradeJson, gradeType); // get grades array from json
+            updateAdapter();
+            updateStats();
+        }
     }
 
     private void loadFromServer() {
@@ -459,9 +462,16 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
             public void onSuccess(DocumentSnapshot documentSnapshot) {
                 isListEmpty = false;
                 if (documentSnapshot.exists()) {
-                    stringGrades = (ArrayList<String>) documentSnapshot.get("StringsArray");
-                    grades = (ArrayList<Grade>) documentSnapshot.get("ObjectsArray");
+                    Map<String, Object> dataToLoad = (HashMap<String, Object>) documentSnapshot.getData();
+                    stringGrades = (ArrayList<String>) dataToLoad.get("StringsArray");
+                    grades = (ArrayList<Grade>) dataToLoad.get("ObjectsArray");
+                    for (Grade grade : grades) {
+                        System.out.println(grade.toString());
+                    }
+                    updateAdapter();
+                    updateStats();
                 }
+
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
@@ -469,7 +479,29 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
                 Toast.makeText(getApplicationContext(), "Nothing to load!", Toast.LENGTH_SHORT).show();
             }
         });
-        updateStats();
+    }
+
+    public void saveOnServer() {
+        String quote = stringGrades.get(0);
+        if (quote.isEmpty()) {
+            quote = "Are you trolling?";
+        }
+        Map<String, Object> dataToSave = new HashMap<String, Object>();
+        dataToSave.put("StringsArray", stringGrades); // Save Strings Array
+        dataToSave.put("ObjectsArray", grades); // Save Objects Array
+        mDocRef.set(dataToSave).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                Log.d(TAG, "Document has been saved!");
+                Toast.makeText(getApplicationContext(), "List has been saved successfully!", Toast.LENGTH_SHORT).show();
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.w(TAG, "Document was not saved!", e);
+                Toast.makeText(getApplicationContext(), "List was not saved!", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     /**
@@ -490,28 +522,6 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
         Toast.makeText(this, "Data saved successfully!", Toast.LENGTH_SHORT).show();
     }
 
-    //Maybe try to load anyway? worst case we wont get anything
-    private void loadFromDevice() {
-
-        SharedPreferences sharedPreferences = getSharedPreferences("shared preferences", MODE_PRIVATE);
-        Gson gson = new Gson();
-
-        String stringJson = sharedPreferences.getString("Grades String List", null); // get string json
-        String gradeJson = sharedPreferences.getString("Grades Object List", null); // get object json
-
-        if (stringJson == null || gradeJson == null) {
-            Toast.makeText(this, "Nothing to load!", Toast.LENGTH_SHORT).show();
-        } else {
-            isListEmpty = false;
-            Type stringType = new TypeToken<ArrayList<String>>() {
-            }.getType();
-            stringGrades = gson.fromJson(stringJson, stringType); //get string grades array from json
-
-            Type gradeType = new TypeToken<ArrayList<Grade>>() {
-            }.getType();
-            grades = gson.fromJson(gradeJson, gradeType); // get grades array from json
-        }
-    }
 
     /**
      * Show about_activity
@@ -605,7 +615,7 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
         stringGrades.add(entry);
         adapter.notifyDataSetChanged();
         updateStats();
-        Toast.makeText(getApplicationContext(), tempSubjectName + " Added Successfully!", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, tempSubjectName + " Added Successfully!", Toast.LENGTH_SHORT).show();
     }
 
     /** -------------  Finish user input reading  ----------------- */
@@ -646,7 +656,7 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
         adapter.notifyDataSetChanged();
 
         //Update label
-        Toast.makeText(getApplicationContext(), temp.getSubject() + " Removed Successfully!", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, temp.getSubject() + " Removed Successfully!", Toast.LENGTH_SHORT).show();
 
         if (numOfInputs - 1 == 0) { // if last input
             avgTitleLabel.setVisibility(View.INVISIBLE);
