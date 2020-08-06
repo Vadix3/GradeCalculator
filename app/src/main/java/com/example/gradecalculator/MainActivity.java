@@ -1,11 +1,13 @@
 package com.example.gradecalculator;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.nfc.Tag;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.ContextMenu;
@@ -21,12 +23,18 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -37,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -50,9 +59,10 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
      */
 
     private FirebaseAnalytics analytics;
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private DocumentReference noteRef = db.document("GradeCalculator/Arrays");
 
     public static final String QUOTE_KEY = "quote";
-    private DocumentReference mDocRef = FirebaseFirestore.getInstance().document("myData/Arrays");
 
     /** End of FireBase stuff*/
 
@@ -81,7 +91,7 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
      */
     //Boolean
     public static boolean loadStart = false; // Boolean to load from start
-    public static String versionNum = "v0.1.1.0";
+    public static String versionNum = "v0.1.2";
     boolean isListEmpty = true;
 
     //Arrays
@@ -150,8 +160,10 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
         grades = new ArrayList<Grade>();
         stringGrades = new ArrayList<String>();
         if (loadStart) {
-            isListEmpty = false;
-            loadFromDevice(); //  -> In case I would like to load from the start and not with a button press
+            loadFromDevice(); //Try to load locally
+            if (isListEmpty == true) // if failed, try to load from server
+                loadFromServer();
+            else Toast.makeText(getApplicationContext(), "Are you trolling?", Toast.LENGTH_SHORT);
         }
         adapter = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_list_item_1, stringGrades);
         gradesList.setAdapter(adapter);
@@ -421,7 +433,6 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
                 loadFromServer();
                 break;
         }
-        Toast.makeText(this, "Data loaded successfully!", Toast.LENGTH_SHORT).show();
     }
 
     private void updateAdapter() {
@@ -453,53 +464,45 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
             grades = gson.fromJson(gradeJson, gradeType); // get grades array from json
             updateAdapter();
             updateStats();
+            Toast.makeText(getApplicationContext(), "Data loaded successfully!", Toast.LENGTH_SHORT).show();
         }
     }
 
     private void loadFromServer() {
-        mDocRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+        noteRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot) {
-                isListEmpty = false;
                 if (documentSnapshot.exists()) {
-                    Map<String, Object> dataToLoad = (HashMap<String, Object>) documentSnapshot.getData();
-                    stringGrades = (ArrayList<String>) dataToLoad.get("StringsArray");
-                    grades = (ArrayList<Grade>) dataToLoad.get("ObjectsArray");
-                    for (Grade grade : grades) {
-                        System.out.println(grade.toString());
-                    }
+                    GradeContainer container = documentSnapshot.toObject(GradeContainer.class);
+                    grades = container.getGrades();
+                    stringGrades = container.getStringGrades();
+                    isListEmpty = false;
                     updateAdapter();
                     updateStats();
+                    Toast.makeText(getApplicationContext(), "Data loaded successfully!", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getApplicationContext(), "Nothing to load!", Toast.LENGTH_SHORT).show();
                 }
-
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                Toast.makeText(getApplicationContext(), "Nothing to load!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "Download Failed!", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
     public void saveOnServer() {
-        String quote = stringGrades.get(0);
-        if (quote.isEmpty()) {
-            quote = "Are you trolling?";
-        }
-        Map<String, Object> dataToSave = new HashMap<String, Object>();
-        dataToSave.put("StringsArray", stringGrades); // Save Strings Array
-        dataToSave.put("ObjectsArray", grades); // Save Objects Array
-        mDocRef.set(dataToSave).addOnSuccessListener(new OnSuccessListener<Void>() {
+        GradeContainer container = new GradeContainer(grades, stringGrades); // Arrays containter to save
+        noteRef.set(container).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
-                Log.d(TAG, "Document has been saved!");
-                Toast.makeText(getApplicationContext(), "List has been saved successfully!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "Upload Successfull!", Toast.LENGTH_SHORT).show();
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                Log.w(TAG, "Document was not saved!", e);
-                Toast.makeText(getApplicationContext(), "List was not saved!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "Upload Failed!!", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -543,10 +546,12 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
     }
 
 
-    /**
-     * Sequence of methods to read user input
-     * and update the list.
-     */
+/**
+ * Sequence of methods to read user input
+ * and update the list.
+ * <p>
+ * * 1. readSubjectName - Enter subject name reading state (Change hint and button, add name to object)
+ */
 
     /**
      * * 1. readSubjectName - Enter subject name reading state (Change hint and button, add name to object)
@@ -618,7 +623,7 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
         Toast.makeText(this, tempSubjectName + " Added Successfully!", Toast.LENGTH_SHORT).show();
     }
 
-    /** -------------  Finish user input reading  ----------------- */
+/** -------------  Finish user input reading  ----------------- */
 
 
     /**

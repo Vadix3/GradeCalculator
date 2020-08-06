@@ -9,6 +9,7 @@ import java.io.Serializable;
  * 3. Points
  */
 public class Grade implements Comparable, Serializable {
+
     private String subject;
     private int grade;
     private double points;
@@ -17,6 +18,12 @@ public class Grade implements Comparable, Serializable {
         this.subject = "";
         this.grade = 0;
         this.points = 0;
+    }
+
+    public Grade(String subject, int grade, double points) {
+        this.subject = subject;
+        this.grade = grade;
+        this.points = points;
     }
 
     public void setSubject(String subject) {
