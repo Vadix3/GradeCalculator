@@ -5,10 +5,12 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.nfc.Tag;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.MenuInflater;
@@ -22,6 +24,8 @@ import android.widget.ListView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.provider.Settings.Secure;
+
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -37,6 +41,7 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -60,7 +65,7 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
 
     private FirebaseAnalytics analytics;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private DocumentReference noteRef = db.document("GradeCalculator/Arrays");
+    private DocumentReference noteRef;
 
     public static final String QUOTE_KEY = "quote";
 
@@ -91,7 +96,7 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
      */
     //Boolean
     public static boolean loadStart = false; // Boolean to load from start
-    public static String versionNum = "v0.1.2";
+    public static String versionNum = "v0.2.4";
     boolean isListEmpty = true;
 
     //Arrays
@@ -104,7 +109,7 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
     private int gradesSum = 0; // Sum of grades
     private double numOfPoints = 0; // Total points
     private double totalAvg = 0;
-
+    private String android_id;
 
     public MainActivity() throws IOException {
     }
@@ -128,11 +133,9 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
         /** Initialize elements **/
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        /**FireBase stuff*/
-
-        /**FireBase stuff*/
-
+        android_id = Secure.getString(this.getContentResolver(),
+                Secure.ANDROID_ID);
+        noteRef = db.document("GradeCalculator/" + android_id);
 
         /**Buttons*/
         inputButton = (Button) findViewById(R.id.main_BTN_subjectButton);
@@ -161,9 +164,9 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
         stringGrades = new ArrayList<String>();
         if (loadStart) {
             loadFromDevice(); //Try to load locally
-            if (isListEmpty == true) // if failed, try to load from server
+            if (isListEmpty == true) { // if failed, try to load from server
                 loadFromServer();
-            else Toast.makeText(getApplicationContext(), "Are you trolling?", Toast.LENGTH_SHORT);
+            }
         }
         adapter = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_list_item_1, stringGrades);
         gradesList.setAdapter(adapter);
@@ -258,6 +261,8 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
     public void showPopup(View v) {
         PopupMenu popup = new PopupMenu(this, v);
         popup.setOnMenuItemClickListener((PopupMenu.OnMenuItemClickListener) this);
+        Vibrator vb = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+        vb.vibrate(20);
         popup.inflate(R.menu.options_menu);
         popup.show();
     }
@@ -333,7 +338,6 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
      * A method to edit selected entry by criteria
      */
     private void editEntry(int position, editType type) {
-        inputButton.setText("Submit Edit");
 
         switch (type) {
             case nameEdit: // Edit name
@@ -451,9 +455,7 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
         String stringJson = sharedPreferences.getString("Grades String List", null); // get string json
         String gradeJson = sharedPreferences.getString("Grades Object List", null); // get object json
 
-        if (stringJson == null || gradeJson == null) {
-            Toast.makeText(this, "Nothing to load!", Toast.LENGTH_SHORT).show();
-        } else {
+        if (stringJson != null && gradeJson != null) {
             isListEmpty = false;
             Type stringType = new TypeToken<ArrayList<String>>() {
             }.getType();
@@ -464,7 +466,6 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
             grades = gson.fromJson(gradeJson, gradeType); // get grades array from json
             updateAdapter();
             updateStats();
-            Toast.makeText(getApplicationContext(), "Data loaded successfully!", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -479,7 +480,7 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
                     isListEmpty = false;
                     updateAdapter();
                     updateStats();
-                    Toast.makeText(getApplicationContext(), "Data loaded successfully!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "Data loaded from server!", Toast.LENGTH_SHORT).show();
                 } else {
                     Toast.makeText(getApplicationContext(), "Nothing to load!", Toast.LENGTH_SHORT).show();
                 }
