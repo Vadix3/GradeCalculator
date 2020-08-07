@@ -16,6 +16,7 @@ import android.view.ContextMenu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -85,7 +86,6 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
     private TextView gradeLabel;
     private TextView avgTitleLabel;
     private TextView emptyListLabel;
-    private TextView versionLabel;
     private EditText inputLabel;
 
     //List
@@ -137,6 +137,7 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
                 Secure.ANDROID_ID);
         noteRef = db.document("GradeCalculator/" + android_id);
 
+
         /**Buttons*/
         inputButton = (Button) findViewById(R.id.main_BTN_subjectButton);
         inputButton.setText("Submit Subject");
@@ -152,8 +153,6 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
         avgTitleLabel.setVisibility(View.INVISIBLE);
         emptyListLabel = (TextView) findViewById(R.id.main_LBL_nothingToShow);
         emptyListLabel.setVisibility(View.INVISIBLE);
-        versionLabel = (TextView) findViewById(R.id.main_LBL_versionLabel);
-        versionLabel.setText(versionNum);
         inputLabel = (EditText) findViewById(R.id.main_EDT_input);
 
         /**Grade List*/
@@ -163,6 +162,7 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
         grades = new ArrayList<Grade>();
         stringGrades = new ArrayList<String>();
         if (loadStart) {
+            Toast.makeText(this, "Welcome back!", Toast.LENGTH_SHORT).show();
             loadFromDevice(); //Try to load locally
             if (isListEmpty == true) { // if failed, try to load from server
                 loadFromServer();
@@ -259,10 +259,11 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
      */
 
     public void showPopup(View v) {
+        v.startAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.image_click));
         PopupMenu popup = new PopupMenu(this, v);
         popup.setOnMenuItemClickListener((PopupMenu.OnMenuItemClickListener) this);
         Vibrator vb = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-        vb.vibrate(20);
+        vb.vibrate(5);
         popup.inflate(R.menu.options_menu);
         popup.show();
     }
@@ -327,6 +328,9 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
                 if (isListEmpty) {
                     Toast.makeText(this, "Nothing to show!", Toast.LENGTH_SHORT).show();
                 } else showStatistics();
+                return true;
+            case R.id.optionsMenu_exit:
+                exitApp();
                 return true;
             default:
                 return false;
@@ -710,12 +714,16 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
         }
     }
 
+    private void exitApp() {
+        QuitDialog dialog = new QuitDialog();
+        dialog.show(getSupportFragmentManager(), "QuitDialog");
+    }
+
     /**
      * Method to ask for exit when backPress
      */
     @Override
     public void onBackPressed() {
-        QuitDialog dialog = new QuitDialog();
-        dialog.show(getSupportFragmentManager(), "QuitDialog");
+        exitApp();
     }
 }

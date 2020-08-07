@@ -1,8 +1,10 @@
 package com.example.gradecalculator;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.os.PersistableBundle;
+import android.os.Vibrator;
 import android.view.View;
 import android.widget.Adapter;
 import android.widget.AdapterView;
@@ -166,5 +168,7 @@ public class StatisticsActivity extends AppCompatActivity {
     private void showEasterEgg() {
         EasterEggDialog dialog = new EasterEggDialog();
         dialog.show(getSupportFragmentManager(), "EasterEggDialog");
+        Vibrator vb = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+        vb.vibrate(5);
     }
 }

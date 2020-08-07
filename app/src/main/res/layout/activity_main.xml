@@ -12,11 +12,10 @@
 
         <ImageView
             android:id="@+id/main_IMG_optionsImage"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
+            android:layout_width="38dp"
+            android:layout_height="23dp"
             android:layout_alignParentRight="true"
-            android:layout_marginTop="25dp"
-            android:layout_marginRight="10dp"
+            android:layout_marginTop="22.5dp"
             android:onClick="showPopup"
             android:src="@drawable/options_icon" />
 
@@ -40,15 +39,6 @@
             android:textStyle="bold"
             android:visibility="invisible" />
 
-        <TextView
-            android:id="@+id/main_LBL_versionLabel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentBottom="true"
-            android:layout_marginRight="5dp"
-            android:layout_marginBottom="5dp"
-            android:text="v0.0.9" />
 
         <TextView
             android:id="@+id/main_LBL_feedbackLabel"
@@ -109,7 +99,9 @@
             android:layout_height="40dp"
             android:layout_above="@+id/main_BTN_subjectButton"
             android:layout_centerHorizontal="true"
-            android:hint="Enter Course Name" />
+            android:background="@drawable/rounded_border_edittext"
+            android:hint="Enter Course Name"
+            android:paddingHorizontal="10dp" />
 
         <ListView
             android:id="@+id/main_LST_gradesList"
@@ -119,7 +111,8 @@
             android:layout_below="@+id/main_LBL_topHeadline"
             android:layout_marginLeft="15dp"
             android:layout_marginTop="10dp"
-            android:layout_marginRight="15dp"/>
+            android:layout_marginRight="15dp"
+            android:layout_marginBottom="15dp" />
 
 
     </RelativeLayout>
